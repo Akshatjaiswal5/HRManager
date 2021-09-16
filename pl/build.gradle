@@ -1,0 +1,8 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation files('../dl/dist/hr-dl-1.0.jar','../common/dist/common.jar','../bl/build/libs/bl.jar')
+}
+

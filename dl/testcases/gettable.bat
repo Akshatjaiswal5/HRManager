@@ -1,0 +1,1 @@
+java -classpath ..\classes;D:\java\hr\common\classes;D:java\javatools\common\classes;. run
