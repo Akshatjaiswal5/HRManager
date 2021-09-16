@@ -20,12 +20,12 @@ public class DesignationUI extends JFrame
  private JScrollPane jScrollPane;
  private DesignationPanel bottomPanel;
  private Container container;
+ private boolean isEditorModeOn;
 
  class DesignationPanel extends JPanel
  {
   private JLabel titleCaptionLabel,titleLabel;
   private JTextField titleTextField;
-  private JButton clearTitleTextFieldButton;
   private JButton add,edit,cancel,delete,exportToPDF,clear;
   private JPanel buttonsPanel;
   private DesignationInterface designation;
@@ -34,12 +34,14 @@ public class DesignationUI extends JFrame
   {
    this.designation=designation;
    titleLabel.setText(designation.getTitle());
+   titleTextField.setText(designation.getTitle());
   }
 
   private void clearDesignation()
   {
    this.designation=null;
    titleLabel.setText("");
+   titleTextField.setText("");
   }
 
   private void initComponents()
@@ -47,7 +49,6 @@ public class DesignationUI extends JFrame
    titleCaptionLabel= new JLabel("Designation");
    titleLabel= new JLabel("");
    titleTextField= new JTextField();
-   clearSearchFieldButton = new JButton();
    add = new JButton("+");
    edit = new JButton("e");
    cancel = new JButton("x");
@@ -59,17 +60,18 @@ public class DesignationUI extends JFrame
   {
    titleCaptionLabel.setFont(new Font("Default",Font.PLAIN,20));
    titleLabel.setFont(new Font("Default",Font.PLAIN,20));
+   titleTextField.setFont(new Font("Default",Font.PLAIN,20));
    setLayout(null);
 
-   titleLabel.setBounds(10+120,10,240,50);
-   titleLabel.setBorder(BorderFactory.createLineBorder(new Color(165,165,165)));
+   titleLabel.setBounds(10+120,10,320,50);
+   titleTextField.setBounds(9+120,19,280,35);
    titleCaptionLabel.setBounds(12,10,120,50);
    add.setBounds(15,70,70,40);
    edit.setBounds(15+90,70,70,40);
    cancel.setBounds(15+180,70,70,40);
    delete.setBounds(15+270,70,70,40);
    exportToPDF.setBounds(15+360,70,70,40);
-   clear.setBounds(15+360,20,70,30);
+   clear.setBounds(14+360+40,19,35,35);
 
    add(titleCaptionLabel);
    add(titleLabel);
@@ -78,6 +80,7 @@ public class DesignationUI extends JFrame
    add(cancel);
    add(delete);
    add(exportToPDF);
+   add(titleTextField);
    add(clear);
   }
   private void addListeners()
@@ -91,8 +94,37 @@ public class DesignationUI extends JFrame
    addListeners();
   }
  }
+ private void setViewerMode()
+ {
+  searchTextField.setEnabled(true);
+  clearSearchFieldButton.setEnabled(true);
+  designationTable.setEnabled(true);
+  jScrollPane.setEnabled(true);
+  bottomPanel.edit.setEnabled(true);
+  bottomPanel.delete.setEnabled(true);
+  bottomPanel.exportToPDF.setEnabled(true);
 
- 
+  bottomPanel.titleLabel.setVisible(true);
+  bottomPanel.titleTextField.setVisible(false);
+  bottomPanel.clear.setVisible(false);
+  isEditorModeOn=false;
+ }
+ private void setEditorMode()
+ {
+  searchTextField.setEnabled(false);
+  clearSearchFieldButton.setEnabled(false);
+  designationTable.setEnabled(false);
+  jScrollPane.setEnabled(false);
+  bottomPanel.edit.setEnabled(false);
+  bottomPanel.delete.setEnabled(false);
+  bottomPanel.exportToPDF.setEnabled(false);
+  bottomPanel.titleLabel.setVisible(false);
+  bottomPanel.titleTextField.setVisible(true);
+  bottomPanel.clear.setVisible(true);
+  isEditorModeOn=true;
+  bottomPanel.titleTextField.requestFocus();
+ }
+
  private void searchDesignation()
  {
   searchTextField.setForeground(Color.BLACK);
@@ -113,7 +145,6 @@ public class DesignationUI extends JFrame
   Rectangle rectangle= designationTable.getCellRect(rowIndex,0,true);
   designationTable.scrollRectToVisible(rectangle);
  }
-
  private void initComponents()
  {
   designationModel=new DesignationModel();
@@ -126,6 +157,7 @@ public class DesignationUI extends JFrame
   jScrollPane= new JScrollPane(designationTable,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
   bottomPanel= new DesignationPanel();
   container=getContentPane();
+  isEditorModeOn=false;
  }
  private void setAppearance()
  {
@@ -218,6 +250,17 @@ public class DesignationUI extends JFrame
     }
    }
   });
+
+  bottomPanel.add.addActionListener(new ActionListener(){
+   public void actionPerformed(ActionEvent ev)
+   {
+    if(!isEditorModeOn)
+    setEditorMode();
+    else
+    setViewerMode();
+   }
+  });
+
   setDefaultCloseOperation(EXIT_ON_CLOSE);
  }
  public DesignationUI()
@@ -225,5 +268,6 @@ public class DesignationUI extends JFrame
   initComponents();
   setAppearance();
   addListeners();
+  setViewerMode();
  }
 }
