@@ -25,7 +25,6 @@ public class DesignationUI extends JFrame
  {
   private JLabel titleCaptionLabel,titleLabel;
   private JTextField titleTextField;
-  private JButton clearTitleTextFieldButton;
   private JButton add,edit,cancel,delete,exportToPDF,clear;
   private JPanel buttonsPanel;
   private DesignationInterface designation;
@@ -34,12 +33,14 @@ public class DesignationUI extends JFrame
   {
    this.designation=designation;
    titleLabel.setText(designation.getTitle());
+   titleTextField.setText(designation.getTitle());
   }
 
   private void clearDesignation()
   {
    this.designation=null;
    titleLabel.setText("");
+   titleTextField.setText("");
   }
 
   private void initComponents()
@@ -47,7 +48,6 @@ public class DesignationUI extends JFrame
    titleCaptionLabel= new JLabel("Designation");
    titleLabel= new JLabel("");
    titleTextField= new JTextField();
-   clearSearchFieldButton = new JButton();
    add = new JButton("+");
    edit = new JButton("e");
    cancel = new JButton("x");
@@ -59,17 +59,18 @@ public class DesignationUI extends JFrame
   {
    titleCaptionLabel.setFont(new Font("Default",Font.PLAIN,20));
    titleLabel.setFont(new Font("Default",Font.PLAIN,20));
+   titleTextField.setFont(new Font("Default",Font.PLAIN,20));
    setLayout(null);
 
-   titleLabel.setBounds(10+120,10,240,50);
-   titleLabel.setBorder(BorderFactory.createLineBorder(new Color(165,165,165)));
+   titleLabel.setBounds(10+120,10,320,50);
+   titleTextField.setBounds(9+120,19,280,35);
    titleCaptionLabel.setBounds(12,10,120,50);
    add.setBounds(15,70,70,40);
    edit.setBounds(15+90,70,70,40);
    cancel.setBounds(15+180,70,70,40);
    delete.setBounds(15+270,70,70,40);
    exportToPDF.setBounds(15+360,70,70,40);
-   clear.setBounds(15+360,20,70,30);
+   clear.setBounds(14+360+40,19,35,35);
 
    add(titleCaptionLabel);
    add(titleLabel);
@@ -78,6 +79,7 @@ public class DesignationUI extends JFrame
    add(cancel);
    add(delete);
    add(exportToPDF);
+   add(titleTextField);
    add(clear);
   }
   private void addListeners()
