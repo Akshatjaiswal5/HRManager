@@ -28,14 +28,128 @@ public class DesignationUI extends JFrame
   private JButton add,edit,cancel,delete,exportToPDF,clear;
   private JPanel buttonsPanel;
   private DesignationInterface designation;
+  private enum MODE{VIEW,ADD,EDIT,DELETE,EXPORT};
+  private MODE mode;
 
+  private void addDesignation()
+  {
+   String title=titleTextField.getText().trim();
+   if(title.length()==0)
+   {
+    //??
+   }
+   
+   DesignationInterface d = new Designation();
+   d.setTitle(title);
+
+   int rowIndex=0;
+   try
+   {
+    designationModel.add(d);
+    rowIndex=designationModel.indexOfDesignation(d);
+    designationTable.setRowSelectionInterval(rowIndex,rowIndex);
+    Rectangle rectangle= designationTable.getCellRect(rowIndex,0,true);
+    designationTable.scrollRectToVisible(rectangle);
+   }
+   catch(BLException ble)
+   {
+    //??
+   }
+
+  }
+  private void updateDesignation()
+  {
+    //??
+  }
+
+  private void setViewMode()
+  {  
+   this.mode=MODE.VIEW;
+   DesignationUI.this.setViewMode();
+   this.titleTextField.setVisible(false);
+   this.titleLabel.setVisible(true);
+   this.clear.setVisible(false);
+   this.add.setText("+");
+   this.edit.setText("e");
+   this.add.setEnabled(true);
+   this.cancel.setEnabled(false);
+   if(designationModel.getRowCount()>0)
+   {
+    this.edit.setEnabled(true);
+    this.delete.setEnabled(true);
+    this.exportToPDF.setEnabled(true);
+   }
+   else
+   {
+    this.edit.setEnabled(false);
+    this.delete.setEnabled(false);
+    this.exportToPDF.setEnabled(false);   
+   }
+  }
+  private void setAddMode()
+  {
+   this.mode=MODE.ADD;
+   DesignationUI.this.setAddMode();
+   this.titleTextField.setText("");
+   this.titleLabel.setVisible(false);
+   this.titleTextField.setVisible(true);
+   this.clear.setVisible(true);
+   this.add.setText("S");
+   this.edit.setEnabled(false);
+   this.cancel.setEnabled(true);
+   this.delete.setEnabled(false);
+   this.exportToPDF.setEnabled(false);
+  }
+  private void setEditMode()
+  {
+   if(designationTable.getSelectedRow()<0||designationTable.getSelectedRow()>=designationModel.getRowCount())
+   {
+    JOptionPane.showMessageDialog(this,"Select designation to edit");
+    return;
+   }
+   this.mode=MODE.EDIT;
+   DesignationUI.this.setEditMode();
+   this.titleTextField.setText(this.designation.getTitle());
+   this.titleLabel.setVisible(false);
+   this.titleTextField.setVisible(true);
+   this.clear.setVisible(true);
+   this.add.setEnabled(false);
+   this.edit.setText("U");
+   this.cancel.setEnabled(true);
+   this.delete.setEnabled(false);
+   this.exportToPDF.setEnabled(false);
+  }
+  private void setDeleteMode()
+  {
+   if(designationTable.getSelectedRow()<0||designationTable.getSelectedRow()>=designationModel.getRowCount())
+   {
+    JOptionPane.showMessageDialog(this,"Select designation to delete");
+    return;
+   }
+   this.mode=MODE.DELETE;
+   DesignationUI.this.setDeleteMode();
+   this.add.setEnabled(false);
+   this.edit.setEnabled(false);
+   this.cancel.setEnabled(false);
+   this.delete.setEnabled(false);
+   this.exportToPDF.setEnabled(false);
+  }
+  private void setExportMode()
+  {
+   this.mode=MODE.DELETE;
+   DesignationUI.this.setExportMode();
+   this.add.setEnabled(false);
+   this.edit.setEnabled(false);
+   this.cancel.setEnabled(false);
+   this.delete.setEnabled(false);
+   this.exportToPDF.setEnabled(false);
+  }
   private void setDesignation(DesignationInterface designation)
   {
    this.designation=designation;
    titleLabel.setText(designation.getTitle());
    titleTextField.setText(designation.getTitle());
   }
-
   private void clearDesignation()
   {
    this.designation=null;
@@ -83,7 +197,44 @@ public class DesignationUI extends JFrame
    add(clear);
   }
   private void addListeners()
-  {}
+  {
+   add.addActionListener(new ActionListener(){
+    public void actionPerformed(ActionEvent ev)
+    {
+     if(mode==MODE.VIEW)
+     {
+      setAddMode();
+     }
+     else
+     {
+      addDesignation();
+      setViewMode();
+     }
+    }
+   });
+
+   edit.addActionListener(new ActionListener(){
+    public void actionPerformed(ActionEvent ev)
+    {
+     if(mode==MODE.VIEW)
+     {
+      setEditMode();
+     }
+     else
+     {
+      updateDesignation();
+      setViewMode();
+     }
+    }
+   });
+
+   cancel.addActionListener(new ActionListener(){
+    public void actionPerformed(ActionEvent ev)
+    {
+     setViewMode();
+    }
+   });
+  }
 
   DesignationPanel()
   {
@@ -94,7 +245,45 @@ public class DesignationUI extends JFrame
   }
  }
 
- 
+ private void setViewMode()
+ {  
+  if(designationModel.getRowCount()==0)
+  {
+   searchTextField.setEnabled(false);
+   clearSearchFieldButton.setEnabled(false);
+   designationTable.setEnabled(false);   
+  }
+  else
+  {
+   searchTextField.setEnabled(true);
+   clearSearchFieldButton.setEnabled(true);
+   designationTable.setEnabled(true);
+  }
+ }
+ private void setAddMode()
+ {
+  searchTextField.setEnabled(false);
+  clearSearchFieldButton.setEnabled(false);
+  designationTable.setEnabled(false); 
+ }
+ private void setEditMode()
+ {
+  searchTextField.setEnabled(false);
+  clearSearchFieldButton.setEnabled(false);
+  designationTable.setEnabled(false); 
+ }
+ private void setDeleteMode()
+ {
+  searchTextField.setEnabled(false);
+  clearSearchFieldButton.setEnabled(false);
+  designationTable.setEnabled(false); 
+ }
+ private void setExportMode()
+ {
+  searchTextField.setEnabled(false);
+  clearSearchFieldButton.setEnabled(false);
+  designationTable.setEnabled(false); 
+ }
  private void searchDesignation()
  {
   searchTextField.setForeground(Color.BLACK);
@@ -115,7 +304,6 @@ public class DesignationUI extends JFrame
   Rectangle rectangle= designationTable.getCellRect(rowIndex,0,true);
   designationTable.scrollRectToVisible(rectangle);
  }
-
  private void initComponents()
  {
   designationModel=new DesignationModel();
@@ -131,14 +319,6 @@ public class DesignationUI extends JFrame
  }
  private void setAppearance()
  {
-  try
-  {
-   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-  }
-  catch(Exception ex)
-  {
-   ex.printStackTrace();
-  }
   Font titleFont= new Font("",Font.PLAIN,35);
   Font captionFont= new Font("Default",Font.BOLD,20);
   Font dataFont= new Font("Default",Font.PLAIN,20);
@@ -227,5 +407,6 @@ public class DesignationUI extends JFrame
   initComponents();
   setAppearance();
   addListeners();
+  bottomPanel.setViewMode();
  }
 }
