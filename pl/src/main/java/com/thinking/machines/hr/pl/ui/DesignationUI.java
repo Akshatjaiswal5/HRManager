@@ -9,6 +9,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import com.formdev.flatlaf.*;
 
 public class DesignationUI extends JFrame
 {
@@ -31,12 +32,14 @@ public class DesignationUI extends JFrame
   private enum MODE{VIEW,ADD,EDIT,DELETE,EXPORT};
   private MODE mode;
 
-  private void addDesignation()
+  private boolean addDesignation()
   {
    String title=titleTextField.getText().trim();
    if(title.length()==0)
    {
-    //??
+    JOptionPane.showMessageDialog(this,"Designation cant be blank");
+    titleTextField.requestFocus();
+    return false;
    }
    
    DesignationInterface d = new Designation();
@@ -53,13 +56,70 @@ public class DesignationUI extends JFrame
    }
    catch(BLException ble)
    {
-    //??
-   }
+    if(ble.hasGenericException())
+    JOptionPane.showMessageDialog(this,ble.getGenericException());
+    else if(ble.hasException("title"))
+    JOptionPane.showMessageDialog(this,ble.getPropertyException("title"));
 
+    titleTextField.requestFocus();
+    return false;
+   }
+   return true;
   }
-  private void updateDesignation()
+  private boolean updateDesignation()
   {
-    //??
+   String title=titleTextField.getText().trim();
+   if(title.length()==0)
+   {
+    JOptionPane.showMessageDialog(this,"Designation cant be blank");
+    titleTextField.requestFocus();
+    return false;
+   }
+   
+   DesignationInterface d = new Designation();
+   d.setCode(this.designation.getCode());
+   d.setTitle(title);
+
+   int rowIndex=0;
+   try
+   {
+    designationModel.update(d);
+    rowIndex=designationModel.indexOfDesignation(d);
+    designationTable.setRowSelectionInterval(rowIndex,rowIndex);
+    Rectangle rectangle= designationTable.getCellRect(rowIndex,0,true);
+    designationTable.scrollRectToVisible(rectangle);
+   }
+   catch(BLException ble)
+   {
+    if(ble.hasGenericException())
+    JOptionPane.showMessageDialog(this,ble.getGenericException());
+    else if(ble.hasException("title"))
+    JOptionPane.showMessageDialog(this,ble.getPropertyException("title"));
+
+    titleTextField.requestFocus();
+   return false;
+   }
+   return true;
+  }
+  private void deleteDesignation()
+  {
+   try
+   {
+    String title= this.designation.getTitle();
+    int selected=JOptionPane.showConfirmDialog(this,"delete "+title+"?","Confirmation",JOptionPane.YES_NO_OPTION);
+    if(selected==JOptionPane.YES_OPTION) 
+    {
+      designationModel.remove(this.designation.getCode());
+      JOptionPane.showMessageDialog(this,title+" deleted");
+    }
+   }
+   catch(BLException ble)
+   {
+    if(ble.hasGenericException())
+    JOptionPane.showMessageDialog(this,ble.getGenericException());
+    else if(ble.hasException("title"))
+    JOptionPane.showMessageDialog(this,ble.getPropertyException("title"));
+   }
   }
 
   private void setViewMode()
@@ -133,6 +193,8 @@ public class DesignationUI extends JFrame
    this.cancel.setEnabled(false);
    this.delete.setEnabled(false);
    this.exportToPDF.setEnabled(false);
+   deleteDesignation();
+   setViewMode();
   }
   private void setExportMode()
   {
@@ -207,7 +269,7 @@ public class DesignationUI extends JFrame
      }
      else
      {
-      addDesignation();
+      if(addDesignation())
       setViewMode();
      }
     }
@@ -222,7 +284,7 @@ public class DesignationUI extends JFrame
      }
      else
      {
-      updateDesignation();
+      if(updateDesignation())
       setViewMode();
      }
     }
@@ -234,6 +296,12 @@ public class DesignationUI extends JFrame
      setViewMode();
     }
    });
+   delete.addActionListener(new ActionListener(){
+    public void actionPerformed(ActionEvent ev)
+    {
+     setDeleteMode();
+    }
+   });
   }
 
   DesignationPanel()
@@ -243,7 +311,7 @@ public class DesignationUI extends JFrame
    setAppearance();
    addListeners();
   }
- }
+}
 
  private void setViewMode()
  {  
@@ -306,8 +374,10 @@ public class DesignationUI extends JFrame
  }
  private void initComponents()
  {
+  FlatLightLaf.setup();
+
   designationModel=new DesignationModel();
-  titleLabel= new JLabel("Designations");
+  titleLabel= new JLabel(new ImageIcon("design.png"));
   searchLabel=new JLabel("Search");
   searchTextField= new JTextField();
   clearSearchFieldButton= new JButton("X");
@@ -319,13 +389,13 @@ public class DesignationUI extends JFrame
  }
  private void setAppearance()
  {
-  Font titleFont= new Font("",Font.PLAIN,35);
+  Font titleFont= new Font("Cascadia Code SemiBold",Font.PLAIN,33);
   Font captionFont= new Font("Default",Font.BOLD,20);
   Font dataFont= new Font("Default",Font.PLAIN,20);
   Font ColumnHeaderFont = new Font("Default",Font.PLAIN,15);
 
   titleLabel.setFont(titleFont);
-  titleLabel.setForeground(new Color(17,130,132));
+  titleLabel.setForeground(new Color(2,98,180));
   searchLabel.setFont(captionFont);
   searchTextField.setFont(dataFont);
   designationTable.setFont(dataFont);
@@ -343,9 +413,9 @@ public class DesignationUI extends JFrame
   tableHeader.setResizingAllowed(false);
 
   container.setLayout(null);
-  titleLabel.setBounds(12,10,250,50);
-  searchTextField.setBounds(12,10+50+10,325,35);
-  clearSearchFieldButton.setBounds(12+325+5,10+50+10,35,35);
+  titleLabel.setBounds(105,10,270,60);
+  searchTextField.setBounds(70,10+50+10,325,35);
+  clearSearchFieldButton.setBounds(70+325+5,10+50+10,35,35);
   jScrollPane.setBounds(12,10+50+10+35+20,460,300);
   bottomPanel.setBounds(12,10+50+10+35+20+300+20,460,125);
 

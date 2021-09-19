@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation files('../dl/dist/hr-dl-1.0.jar','../common/dist/common.jar','../bl/build/libs/bl.jar')
+    implementation files('../dl/dist/hr-dl-1.0.jar','../common/dist/common.jar','../bl/build/libs/bl.jar','../common/dist/flatlaf-1.6.jar')
 }
 
