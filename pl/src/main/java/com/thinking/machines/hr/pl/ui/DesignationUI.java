@@ -6,6 +6,8 @@ import com.thinking.machines.hr.bl.pojo.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
@@ -377,7 +379,7 @@ public class DesignationUI extends JFrame
   FlatLightLaf.setup();
 
   designationModel=new DesignationModel();
-  titleLabel= new JLabel(new ImageIcon("design.png"));
+  titleLabel= new JLabel(new ImageIcon("."+File.separator+"resources"+File.separator+"design.png"));
   searchLabel=new JLabel("Search");
   searchTextField= new JTextField();
   clearSearchFieldButton= new JButton("X");
@@ -428,7 +430,7 @@ public class DesignationUI extends JFrame
   Dimension d= Toolkit.getDefaultToolkit().getScreenSize();
   setSize(500,625);
   setLocation((d.width/2)-500/2,(d.height/2)-625/2);
-  setIconImage(Toolkit.getDefaultToolkit().getImage("blank.png"));
+  setIconImage(Toolkit.getDefaultToolkit().getImage("."+File.separator+"resources"+File.separator+"blank.png"));
  }
  private void addListeners()
  {
