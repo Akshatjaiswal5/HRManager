@@ -12,6 +12,48 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import com.formdev.flatlaf.*;
+import java.awt.geom.AffineTransform;
+
+class NoScalingIcon implements Icon
+{
+ private Icon icon;
+ public NoScalingIcon(Icon icon)
+ {
+  this.icon = icon;
+ }
+ public int getIconWidth()
+ {
+  return icon.getIconWidth();
+ }
+ public int getIconHeight()
+ {
+  return icon.getIconHeight();
+ }
+ public void paintIcon(Component c, Graphics g, int x, int y)
+ {
+  Graphics2D g2d = (Graphics2D)g.create();
+  AffineTransform at = g2d.getTransform();
+
+  int scaleX = (int)(x * at.getScaleX());
+  int scaleY = (int)(y * at.getScaleY());
+
+  int offsetX = (int)(icon.getIconWidth() * (at.getScaleX() - 1) / 2);
+  int offsetY = (int)(icon.getIconHeight() * (at.getScaleY() - 1) / 2);
+
+  int locationX = scaleX + offsetX;
+  int locationY = scaleY + offsetY;
+
+  //  Reset scaling to 1.0 by concatenating an inverse scale transfom
+
+  AffineTransform scaled = AffineTransform.getScaleInstance(1.0 / at.getScaleX(), 1.0 / at.getScaleY());
+  at.concatenate( scaled );
+  g2d.setTransform( at );
+
+  icon.paintIcon(c, g2d, locationX, locationY);
+
+  g2d.dispose();
+ }
+}
 
 public class DesignationUI extends JFrame
 {
@@ -23,6 +65,7 @@ public class DesignationUI extends JFrame
  private JScrollPane jScrollPane;
  private DesignationPanel bottomPanel;
  private Container container;
+ private NoScalingIcon titleLabelIcon,clearIcon;
 
  class DesignationPanel extends JPanel
  {
@@ -33,6 +76,8 @@ public class DesignationUI extends JFrame
   private DesignationInterface designation;
   private enum MODE{VIEW,ADD,EDIT,DELETE,EXPORT};
   private MODE mode;
+  private NoScalingIcon addIcon,editIcon,cancelIcon,deleteIcon,exportIcon,saveIcon,updateIcon;
+  private NoScalingIcon addOffIcon,editOffIcon,cancelOffIcon,deleteOffIcon,exportOffIcon;
 
   private boolean addDesignation()
   {
@@ -131,21 +176,26 @@ public class DesignationUI extends JFrame
    this.titleTextField.setVisible(false);
    this.titleLabel.setVisible(true);
    this.clear.setVisible(false);
-   this.add.setText("+");
-   this.edit.setText("e");
+
+   this.add.setIcon(addIcon);
    this.add.setEnabled(true);
+   this.cancel.setIcon(cancelOffIcon);
    this.cancel.setEnabled(false);
-   if(designationModel.getRowCount()>0)
+   this.exportToPDF.setIcon(exportIcon);
+   this.exportToPDF.setEnabled(true);
+   if(designation!=null)
    {
+    this.edit.setIcon(editIcon);
     this.edit.setEnabled(true);
+    this.delete.setIcon(deleteIcon);
     this.delete.setEnabled(true);
-    this.exportToPDF.setEnabled(true);
    }
    else
    {
+    this.edit.setIcon(editOffIcon);
     this.edit.setEnabled(false);
-    this.delete.setEnabled(false);
-    this.exportToPDF.setEnabled(false);   
+    this.delete.setIcon(deleteOffIcon);
+    this.delete.setEnabled(false);  
    }
   }
   private void setAddMode()
@@ -156,44 +206,49 @@ public class DesignationUI extends JFrame
    this.titleLabel.setVisible(false);
    this.titleTextField.setVisible(true);
    this.clear.setVisible(true);
-   this.add.setText("S");
+   
+   this.add.setIcon(saveIcon);
+   this.edit.setIcon(editOffIcon);
    this.edit.setEnabled(false);
+   this.cancel.setIcon(cancelIcon);
    this.cancel.setEnabled(true);
+   this.delete.setIcon(deleteOffIcon);
    this.delete.setEnabled(false);
+   this.exportToPDF.setIcon(exportOffIcon);
    this.exportToPDF.setEnabled(false);
   }
   private void setEditMode()
   {
-   if(designationTable.getSelectedRow()<0||designationTable.getSelectedRow()>=designationModel.getRowCount())
-   {
-    JOptionPane.showMessageDialog(this,"Select designation to edit");
-    return;
-   }
    this.mode=MODE.EDIT;
    DesignationUI.this.setEditMode();
    this.titleTextField.setText(this.designation.getTitle());
    this.titleLabel.setVisible(false);
    this.titleTextField.setVisible(true);
    this.clear.setVisible(true);
+
+   this.add.setIcon(addOffIcon);
    this.add.setEnabled(false);
-   this.edit.setText("U");
+   this.edit.setIcon(updateIcon);
+   this.cancel.setIcon(cancelIcon);
    this.cancel.setEnabled(true);
+   this.delete.setIcon(deleteOffIcon);
    this.delete.setEnabled(false);
+   this.exportToPDF.setIcon(exportOffIcon);
    this.exportToPDF.setEnabled(false);
   }
   private void setDeleteMode()
   {
-   if(designationTable.getSelectedRow()<0||designationTable.getSelectedRow()>=designationModel.getRowCount())
-   {
-    JOptionPane.showMessageDialog(this,"Select designation to delete");
-    return;
-   }
    this.mode=MODE.DELETE;
    DesignationUI.this.setDeleteMode();
+   this.add.setIcon(addOffIcon);
    this.add.setEnabled(false);
+   this.edit.setIcon(editOffIcon);
    this.edit.setEnabled(false);
+   this.cancel.setIcon(cancelOffIcon);
    this.cancel.setEnabled(false);
+   this.delete.setIcon(deleteOffIcon);
    this.delete.setEnabled(false);
+   this.exportToPDF.setIcon(exportOffIcon);
    this.exportToPDF.setEnabled(false);
    deleteDesignation();
    setViewMode();
@@ -202,10 +257,15 @@ public class DesignationUI extends JFrame
   {
    this.mode=MODE.DELETE;
    DesignationUI.this.setExportMode();
+   this.add.setIcon(addOffIcon);
    this.add.setEnabled(false);
+   this.edit.setIcon(editOffIcon);
    this.edit.setEnabled(false);
+   this.cancel.setIcon(cancelOffIcon);
    this.cancel.setEnabled(false);
+   this.delete.setIcon(deleteOffIcon);
    this.delete.setEnabled(false);
+   this.exportToPDF.setIcon(exportOffIcon);
    this.exportToPDF.setEnabled(false);
   }
   private void setDesignation(DesignationInterface designation)
@@ -219,46 +279,76 @@ public class DesignationUI extends JFrame
    this.designation=null;
    titleLabel.setText("");
    titleTextField.setText("");
+  } 
+  private void prepareResources()
+  {
+   addIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"add.png"));
+   editIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"edit.png"));
+   cancelIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"cancel.png"));
+   deleteIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"delete.png"));
+   exportIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"export.png"));
+   saveIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"save.png"));
+   updateIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"update.png"));
+   addOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"addOff.png"));
+   editOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"editOff.png"));
+   cancelOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"cancelOff.png"));
+   deleteOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"deleteOff.png"));
+   exportOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"exportOff.png"));
   }
-
   private void initComponents()
   {
    titleCaptionLabel= new JLabel("Designation");
    titleLabel= new JLabel("");
    titleTextField= new JTextField();
-   add = new JButton("+");
-   edit = new JButton("e");
-   cancel = new JButton("x");
-   delete = new JButton("-");
-   exportToPDF = new JButton("p");
-   clear = new JButton("C");
+   clear = new JButton();
+   add = new JButton();
+   edit = new JButton();
+   cancel = new JButton();
+   delete = new JButton();
+   exportToPDF = new JButton();
   }
   private void setAppearance()
   {
-   titleCaptionLabel.setFont(new Font("Default",Font.PLAIN,20));
-   titleLabel.setFont(new Font("Default",Font.PLAIN,20));
-   titleTextField.setFont(new Font("Default",Font.PLAIN,20));
+   setBorder(BorderFactory.createLineBorder(new Color(165,165,165)));
    setLayout(null);
 
-   titleLabel.setBounds(10+120,10,320,50);
-   titleTextField.setBounds(9+120,19,280,35);
+   titleCaptionLabel.setFont(new Font("Default",Font.PLAIN,20));
    titleCaptionLabel.setBounds(12,10,120,50);
-   add.setBounds(15,70,70,40);
-   edit.setBounds(15+90,70,70,40);
-   cancel.setBounds(15+180,70,70,40);
-   delete.setBounds(15+270,70,70,40);
-   exportToPDF.setBounds(15+360,70,70,40);
-   clear.setBounds(14+360+40,19,35,35);
-
    add(titleCaptionLabel);
+
+   titleLabel.setFont(new Font("Default",Font.PLAIN,20));
+   titleLabel.setBounds(10+120,10,320,50);
    add(titleLabel);
-   add(add);
-   add(edit);
-   add(cancel);
-   add(delete);
-   add(exportToPDF);
+
+   titleTextField.setFont(new Font("Default",Font.PLAIN,20));
+   titleTextField.setBounds(9+120,19,280,35);
    add(titleTextField);
+
+
+   clear.setBounds(14+360+40,19,35,35);
+   clear.setIcon(clearIcon);
    add(clear);
+
+   add.setBounds(15,70,70,40);
+   add.setIcon(addIcon);
+   add(add);
+
+   edit.setBounds(15+90,70,70,40);
+   edit.setIcon(editIcon);
+   add(edit);
+
+   cancel.setBounds(15+180,70,70,40);   
+   cancel.setIcon(cancelIcon);
+   add(cancel);
+
+   delete.setBounds(15+270,70,70,40);  
+   delete.setIcon(deleteIcon); 
+   add(delete);
+
+   exportToPDF.setBounds(15+360,70,70,40);  
+   exportToPDF.setIcon(exportIcon); 
+   add(exportToPDF);
+   
   }
   private void addListeners()
   {
@@ -304,16 +394,24 @@ public class DesignationUI extends JFrame
      setDeleteMode();
     }
    });
+  
+   clear.addActionListener(new ActionListener(){
+    public void actionPerformed(ActionEvent ev)
+    {
+     titleTextField.setText("");
+     searchTextField.requestFocus();
+    }
+   });
   }
-
   DesignationPanel()
   {
-   setBorder(BorderFactory.createLineBorder(new Color(165,165,165)));
+   
+   prepareResources();
    initComponents();
    setAppearance();
    addListeners();
   }
-}
+ }
 
  private void setViewMode()
  {  
@@ -374,15 +472,21 @@ public class DesignationUI extends JFrame
   Rectangle rectangle= designationTable.getCellRect(rowIndex,0,true);
   designationTable.scrollRectToVisible(rectangle);
  }
+
+ private void prepareResources()
+ {
+   titleLabelIcon=new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"design.png"));
+   clearIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"clear.png"));
+ }
  private void initComponents()
  {
   FlatLightLaf.setup();
 
   designationModel=new DesignationModel();
-  titleLabel= new JLabel(new ImageIcon("."+File.separator+"resources"+File.separator+"design.png"));
+  titleLabel= new JLabel(titleLabelIcon);
   searchLabel=new JLabel("Search");
   searchTextField= new JTextField();
-  clearSearchFieldButton= new JButton("X");
+  clearSearchFieldButton= new JButton();
   searchErrorLabel=new JLabel("Not Found");
   designationTable= new JTable(designationModel);
   jScrollPane= new JScrollPane(designationTable,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -391,16 +495,20 @@ public class DesignationUI extends JFrame
  }
  private void setAppearance()
  {
-  Font titleFont= new Font("Cascadia Code SemiBold",Font.PLAIN,33);
-  Font captionFont= new Font("Default",Font.BOLD,20);
-  Font dataFont= new Font("Default",Font.PLAIN,20);
-  Font ColumnHeaderFont = new Font("Default",Font.PLAIN,15);
+  container.setLayout(null);
 
-  titleLabel.setFont(titleFont);
-  titleLabel.setForeground(new Color(2,98,180));
-  searchLabel.setFont(captionFont);
-  searchTextField.setFont(dataFont);
-  designationTable.setFont(dataFont);
+  titleLabel.setBounds(105,10,270,60);
+  container.add(titleLabel);
+
+  searchTextField.setFont(new Font("Default",Font.PLAIN,20));
+  searchTextField.setBounds(70,10+50+10,325,35);
+  container.add(searchTextField);
+
+  clearSearchFieldButton.setBounds(70+325+5,10+50+10,35,35);
+  clearSearchFieldButton.setIcon(clearIcon);
+  container.add(clearSearchFieldButton); 
+  
+  designationTable.setFont(new Font("Default",Font.PLAIN,20));
   designationTable.setRowHeight(30);
   designationTable.getColumnModel().getColumn(0).setPreferredWidth(100);
   designationTable.getColumnModel().getColumn(1).setPreferredWidth(900);
@@ -410,27 +518,21 @@ public class DesignationUI extends JFrame
   centerRenderer.setHorizontalAlignment( JLabel.CENTER );
   designationTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
   JTableHeader tableHeader=designationTable.getTableHeader();
-  tableHeader.setFont(ColumnHeaderFont);
+  tableHeader.setFont(new Font("Default",Font.PLAIN,15));
   tableHeader.setReorderingAllowed(false);
   tableHeader.setResizingAllowed(false);
-
-  container.setLayout(null);
-  titleLabel.setBounds(105,10,270,60);
-  searchTextField.setBounds(70,10+50+10,325,35);
-  clearSearchFieldButton.setBounds(70+325+5,10+50+10,35,35);
   jScrollPane.setBounds(12,10+50+10+35+20,460,300);
-  bottomPanel.setBounds(12,10+50+10+35+20+300+20,460,125);
-
-  container.add(titleLabel);
-  container.add(searchTextField);
-  container.add(clearSearchFieldButton);
   container.add(jScrollPane);
+  
+  
+  bottomPanel.setBounds(12,10+50+10+35+20+300+20,460,125);
   container.add(bottomPanel);
 
   Dimension d= Toolkit.getDefaultToolkit().getScreenSize();
-  setSize(500,625);
-  setLocation((d.width/2)-500/2,(d.height/2)-625/2);
-  setIconImage(Toolkit.getDefaultToolkit().getImage("."+File.separator+"resources"+File.separator+"blank.png"));
+  int w=500,h=625;
+  setSize(w,h);
+  setLocation((d.width/2)-w/2,(d.height/2)-h/2);
+  setIconImage(Toolkit.getDefaultToolkit().getImage("."+File.separator+"resources"+File.separator+"appIcon.png"));
  }
  private void addListeners()
  {
@@ -470,12 +572,14 @@ public class DesignationUI extends JFrame
     {
      bottomPanel.clearDesignation();
     }
+    bottomPanel.setViewMode();
    }
   });
   setDefaultCloseOperation(EXIT_ON_CLOSE);
  }
  public DesignationUI()
  {
+  prepareResources();
   initComponents();
   setAppearance();
   addListeners();
