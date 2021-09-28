@@ -7,7 +7,6 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
@@ -58,7 +57,7 @@ class NoScalingIcon implements Icon
 public class DesignationUI extends JFrame
 {
  private DesignationModel designationModel;
- private JLabel titleLabel,searchLabel,searchErrorLabel;
+ private JLabel titleLabel;
  private JTextField searchTextField; 
  private JButton clearSearchFieldButton;   
  private JTable designationTable;
@@ -168,6 +167,27 @@ public class DesignationUI extends JFrame
     JOptionPane.showMessageDialog(this,ble.getPropertyException("title"));
    }
   }
+  private void exportDesignation()
+  {
+    JFileChooser jfc= new JFileChooser();
+    int selected=jfc.showSaveDialog(DesignationUI.this);
+  
+    if(selected!=JFileChooser.APPROVE_OPTION)
+    return;
+  
+    File file=jfc.getSelectedFile();
+
+    try
+    {
+     designationModel.exportAsPdf(file);
+     JOptionPane.showMessageDialog(this,"Exported as "+file.getName());
+    }
+    catch(BLException ble)
+    {
+     JOptionPane.showMessageDialog(this,"An error occured");
+    }    
+  }
+
 
   private void setViewMode()
   {  
@@ -255,7 +275,7 @@ public class DesignationUI extends JFrame
   }
   private void setExportMode()
   {
-   this.mode=MODE.DELETE;
+   this.mode=MODE.EXPORT;
    DesignationUI.this.setExportMode();
    this.add.setIcon(addOffIcon);
    this.add.setEnabled(false);
@@ -267,6 +287,8 @@ public class DesignationUI extends JFrame
    this.delete.setEnabled(false);
    this.exportToPDF.setIcon(exportOffIcon);
    this.exportToPDF.setEnabled(false);
+   exportDesignation();
+   setViewMode();
   }
   private void setDesignation(DesignationInterface designation)
   {
@@ -282,18 +304,18 @@ public class DesignationUI extends JFrame
   } 
   private void prepareResources()
   {
-   addIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"add.png"));
-   editIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"edit.png"));
-   cancelIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"cancel.png"));
-   deleteIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"delete.png"));
-   exportIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"export.png"));
-   saveIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"save.png"));
-   updateIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"update.png"));
-   addOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"addOff.png"));
-   editOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"editOff.png"));
-   cancelOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"cancelOff.png"));
-   deleteOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"deleteOff.png"));
-   exportOffIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"exportOff.png"));
+   addIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/add.png")));
+   editIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/edit.png")));
+   cancelIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/cancel.png")));
+   deleteIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/delete.png")));
+   exportIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/export.png")));
+   saveIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/save.png")));
+   updateIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/update.png")));
+   addOffIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/addOff.png")));
+   editOffIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/editOff.png")));
+   cancelOffIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/cancelOff.png")));
+   deleteOffIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/deleteOff.png")));
+   exportOffIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/exportOff.png")));
   }
   private void initComponents()
   {
@@ -402,6 +424,12 @@ public class DesignationUI extends JFrame
      searchTextField.requestFocus();
     }
    });
+   exportToPDF.addActionListener(new ActionListener(){
+    public void actionPerformed(ActionEvent ev)
+    {
+     setExportMode();
+    }
+   });
   }
   DesignationPanel()
   {
@@ -475,8 +503,8 @@ public class DesignationUI extends JFrame
 
  private void prepareResources()
  {
-   titleLabelIcon=new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"design.png"));
-   clearIcon = new NoScalingIcon(new ImageIcon("."+File.separator+"resources"+File.separator+"clear.png"));
+  titleLabelIcon=new NoScalingIcon(new ImageIcon(getClass().getResource("/images/design.png")));
+  clearIcon = new NoScalingIcon(new ImageIcon(getClass().getResource("/images/clear.png")));
  }
  private void initComponents()
  {
@@ -484,10 +512,8 @@ public class DesignationUI extends JFrame
 
   designationModel=new DesignationModel();
   titleLabel= new JLabel(titleLabelIcon);
-  searchLabel=new JLabel("Search");
   searchTextField= new JTextField();
   clearSearchFieldButton= new JButton();
-  searchErrorLabel=new JLabel("Not Found");
   designationTable= new JTable(designationModel);
   jScrollPane= new JScrollPane(designationTable,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
   bottomPanel= new DesignationPanel();
@@ -532,7 +558,8 @@ public class DesignationUI extends JFrame
   int w=500,h=625;
   setSize(w,h);
   setLocation((d.width/2)-w/2,(d.height/2)-h/2);
-  setIconImage(Toolkit.getDefaultToolkit().getImage("."+File.separator+"resources"+File.separator+"appIcon.png"));
+  setIconImage(new ImageIcon(getClass().getResource("/images/appIcon.png")).getImage());
+  setResizable(false);
  }
  private void addListeners()
  {

@@ -6,10 +6,24 @@ import com.thinking.machines.hr.bl.managers.*;
 import com.thinking.machines.hr.bl.pojo.*;
 import com.thinking.machines.enums.*;
 import java.util.*;
-import java.awt.*;
+//import java.awt.Color;
+//import java.awt.*;
 import java.awt.event.*;
+import com.itextpdf.layout.borders.*;
+
+import javax.lang.model.element.Element;
+import javax.print.attribute.standard.PageRanges;
 import javax.swing.*;
 import javax.swing.table.*;
+import java.io.File;
+//import javax.swing.text.html.ParagraphView;
+import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.layout.*;
+import com.itextpdf.layout.element.*;
+import com.itextpdf.io.image.*;
+import com.itextpdf.kernel.font.*;
+import com.itextpdf.io.font.constants.*;
+import com.itextpdf.layout.property.*;
 
 public class DesignationModel extends AbstractTableModel
 {
@@ -93,7 +107,6 @@ public class DesignationModel extends AbstractTableModel
 
   fireTableDataChanged();
  }
-
  public int indexOfDesignation(DesignationInterface designation) throws BLException
  {
   Iterator<DesignationInterface> iterator=this.designations.iterator();
@@ -113,7 +126,6 @@ public class DesignationModel extends AbstractTableModel
   ble.setGenericException("Invalid Designation"+designation.getTitle());
   throw ble;
  }
-
  public int indexOfTitle(String title,boolean partialLeftSearch) throws BLException
  {
   Iterator<DesignationInterface> iterator=this.designations.iterator();
@@ -180,7 +192,6 @@ public class DesignationModel extends AbstractTableModel
   this.designations.remove(index);
   fireTableDataChanged();
  }
-
  public DesignationInterface getDesignationAt(int index) throws BLException
  {
   if(index<0||index>=this.designations.size())
@@ -190,6 +201,107 @@ public class DesignationModel extends AbstractTableModel
    throw ble;
   }
   return this.designations.get(index);
+ }
+ public void exportAsPdf(File file) throws BLException
+ {
+
+  try
+  {
+   PdfWriter pdfwriter= new PdfWriter(file);
+   PdfDocument pdfdocument= new PdfDocument(pdfwriter);
+   Document document= new Document(pdfdocument);
+   
+
+   Image logo=new Image(ImageDataFactory.create(getClass().getResource("/images/companyLogo.png")));
+   Paragraph logoPara= new Paragraph();
+   logoPara.add(logo);
+
+   Paragraph companyNamePara= new Paragraph("Thinking machines.in");
+   companyNamePara.setFont(PdfFontFactory.createFont(StandardFonts.TIMES_BOLD));
+   companyNamePara.setFontSize(30);
+
+   float a[]={600f,1000f};
+   Table topTable= new Table(a);
+   Cell c= new Cell();
+   c.add(logoPara);
+   c.setBorder(Border.NO_BORDER);
+   topTable.addCell(c);
+   c= new Cell();
+   c.add(companyNamePara).setHeight(70).setVerticalAlignment(VerticalAlignment.MIDDLE);
+   c.setBorder(Border.NO_BORDER);
+   topTable.addCell(c);
+
+   Paragraph reportTitlePara= new Paragraph("List of Designations");
+   reportTitlePara.setFontSize(15);
+   
+   float ar[]={1000f,100f};
+   Table headingTable;
+   Paragraph pageNoPara;
+
+   Paragraph footnote= new Paragraph("Created by Akshat Jaiswal.");
+   footnote.setTextAlignment(TextAlignment.RIGHT);
+
+   Cell column1= new Cell();
+   column1.add(new Paragraph("S.no").setFontSize(16)).setHeight(30);
+   Cell column2= new Cell();
+   column2.add(new Paragraph("Designations").setFontSize(16));
+
+   int Sno=0,maxPage=26,pageNo=0;
+   float arr[]={100f,1000f};
+   boolean newPage=true;
+   Table table=null;
+   DesignationInterface designation;
+  
+   while(true)
+   {
+    if(newPage)
+    {
+     //createHeader
+     pageNo++;
+     document.add(topTable);
+
+     headingTable= new Table(ar);
+     headingTable.addCell(new Cell().add(reportTitlePara).setVerticalAlignment(VerticalAlignment.MIDDLE).setBorder(Border.NO_BORDER));
+     pageNoPara=new Paragraph("Page no: "+pageNo);
+     pageNoPara.setTextAlignment(TextAlignment.RIGHT);
+     headingTable.addCell(new Cell().add(pageNoPara).setBorder(Border.NO_BORDER));
+     document.add(headingTable);
+
+     table=new Table(arr);
+     table.addHeaderCell(column1);
+     table.addHeaderCell(column2);
+     newPage=false;
+    }
+
+
+    designation= designations.get(Sno);
+
+    table.addCell(new Cell().add(new Paragraph(Sno+1+"")));
+    table.addCell(new Cell().add(new Paragraph(designation.getTitle())));
+    Sno++;
+
+    if(Sno%maxPage==0||designations.size()==Sno)
+    {
+     document.add(table);
+
+     //createFooter
+     newPage=true;
+     document.add(footnote);
+     
+     if(designations.size()==Sno)
+     break;
+
+     document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+    }
+
+   }
+
+   document.close();
+  }
+  catch(Exception ioe)
+  {
+   throw new BLException();
+  }
  }
 
  public DesignationModel()
