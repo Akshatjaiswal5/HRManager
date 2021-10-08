@@ -1,1 +1,1 @@
-java -classpath ..\bl\build\libs\bl.jar;..\common\dist\common.jar;..\dl\dist\hr-dl-1.0.jar;build\libs\pl.jar;../common/dist/flatlaf-1.6.jar;../itext/*;. com.thinking.machines.hr.pl.Main
+java -classpath ..\bl\build\libs\bl.jar;..\common\dist\common.jar;..\dbdl\build\libs\dbdl-1.0.jar;build\libs\pl.jar;../common/dist/flatlaf-1.6.jar;../itext/*;../mysql/mysql.jar;. com.thinking.machines.hr.pl.Main

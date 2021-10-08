@@ -31,7 +31,6 @@ public class DesignationManager implements DesignationManagerInterface
   try
   {
    Set<DesignationDTOInterface> dlDesignations= new DesignationDAO().getAll();
-   
 
    for(DesignationDTOInterface ddtoi: dlDesignations)
    {

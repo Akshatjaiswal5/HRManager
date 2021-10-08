@@ -6,8 +6,6 @@ import com.thinking.machines.hr.bl.managers.*;
 import com.thinking.machines.hr.bl.pojo.*;
 import com.thinking.machines.enums.*;
 import java.util.*;
-//import java.awt.Color;
-//import java.awt.*;
 import java.awt.event.*;
 import com.itextpdf.layout.borders.*;
 
@@ -16,7 +14,6 @@ import javax.print.attribute.standard.PageRanges;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.io.File;
-//import javax.swing.text.html.ParagraphView;
 import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.layout.*;
 import com.itextpdf.layout.element.*;
@@ -43,7 +40,7 @@ public class DesignationModel extends AbstractTableModel
   }
   catch(BLException ble)
   {
-   //do something
+   System.out.println(ble.getGenericException());
   } 
   Set<DesignationInterface> blDesignations= designationManager.getDesignations();
 
