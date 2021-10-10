@@ -345,9 +345,9 @@ public class EmployeeDAO implements EmployeeDAOInterface
    while(r.next())
    {
     employeeId="A"+(1000000+r.getInt("employee_id"));
-    name=r.getString("name");
-    PANNumber=r.getString("pan_number");
-    aadharCardNumber=r.getString("aadhar_card_number");
+    name=r.getString("name").trim();
+    PANNumber=r.getString("pan_number").trim();
+    aadharCardNumber=r.getString("aadhar_card_number").trim();
     designationCode=r.getInt("designation_code");
     gender=GenderChar.from(r.getString("gender").charAt(0));
     isIndian=r.getBoolean("is_indian");
@@ -452,88 +452,70 @@ public class EmployeeDAO implements EmployeeDAOInterface
  { 
   if(designationCode<0)
   return false;
-
-  File file= new File(FILE_NAME);
-  if(!(file.exists()))
-  return false;
-
-  try(RandomAccessFile raf= new RandomAccessFile(file,"rw");)
+  
+  boolean exists;
+  try(Connection connection=DAOConnection.getConnection())
   {
-   if(raf.length()==0)
-   return false;     
- 
-   raf.readLine();raf.readLine();  
-
-   int fDesignationCode;
-
-   while(raf.getFilePointer()<raf.length())
+   PreparedStatement s;
+   s=connection.prepareStatement("SELECT title FROM designation WHERE code=?");
+   s.setInt(1,designationCode);
+   ResultSet r= s.executeQuery();
+   if(!r.next())
    {
-    raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-    raf.readLine();
-    fDesignationCode=Integer.parseInt(raf.readLine());
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-
-    if(fDesignationCode==designationCode)
-    {
-     raf.close();
-     return true;
-    }
+    r.close();s.close();
+    throw new DAOException("Designation code: "+designationCode+" does not exist.");
    }
+   r.close();s.close();
 
-   return false; 
+   s=connection.prepareStatement("SELECT gender FROM employee WHERE designation_code=?");
+   s.setInt(1,designationCode);
+   r= s.executeQuery();
+   exists=r.next();
+   r.close(); s.close();
   }
-  catch(IOException ioe)
+  catch(SQLException se)
   {
-   throw new DAOException(ioe.getMessage());
+   throw new DAOException(se.getMessage());
   }
+  return exists;
  }
  public int getCountByDesignation(int designationCode) throws DAOException
  { 
-  if(!(new DesignationDAO().codeExists(designationCode)))
+  if(designationCode<0)
   throw new DAOException("Invalid code");
 
-  File file= new File(FILE_NAME);
-  if(!(file.exists()))
-  return 0;
+  int recordCount;
 
-  try(RandomAccessFile raf= new RandomAccessFile(file,"rw");)
+  try(Connection connection=DAOConnection.getConnection())
   {
-   if(raf.length()==0)
-   return 0;     
- 
-   raf.readLine();raf.readLine();  
+   PreparedStatement s;
+   s=connection.prepareStatement("SELECT title FROM designation WHERE code=?");
+   s.setInt(1,designationCode);
 
-   int fDesignationCode;
-   int count=0;
-
-   while(raf.getFilePointer()<raf.length())
+   ResultSet r= s.executeQuery();
+   if(!r.next())
    {
-    raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-    raf.readLine();
-    fDesignationCode=Integer.parseInt(raf.readLine());
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-
-    if(fDesignationCode==designationCode)
-    count++;
-
+    r.close();s.close();
+    throw new DAOException("Designation code: "+designationCode+" does not exist.");
    }
+   r.close();s.close();
 
-   return count; 
+
+   s=connection.prepareStatement("SELECT count(*) FROM employee WHERE designation_code=?");
+   s.setInt(1,designationCode);
+
+   r=s.executeQuery();
+   r.next();
+   recordCount=r.getInt("count");
+   
+   r.close(); s.close();
   }
-  catch(IOException ioe)
+  catch(SQLException se)
   {
-   throw new DAOException(ioe.getMessage());
+   throw new DAOException(se.getMessage());
   }
+
+  return recordCount;
  }
  public boolean employeeIdExists(String employeeId) throws DAOException
  { 
@@ -543,44 +525,23 @@ public class EmployeeDAO implements EmployeeDAOInterface
   if(employeeId.length()==0)
   throw new DAOException("Length of employeeId is 0");  
 
-  File file= new File(FILE_NAME);
-  if(!(file.exists()))
-  return false;
-
-  try(RandomAccessFile raf= new RandomAccessFile(file,"rw");)
+  boolean exists;
+  try(Connection connection=DAOConnection.getConnection())
   {
-   if(raf.length()==0)
-   return false;     
+   PreparedStatement s;
+   s=connection.prepareStatement("SELECT gender FROM employee WHERE employee_id=?");
+   Integer employeeIdInt=Integer.parseInt(employeeId.substring(1))-1000000;
+   s.setInt(1,employeeIdInt);
  
-   raf.readLine();raf.readLine();  
-
-   String fEmployeeId; 
-
-
-   while(raf.getFilePointer()<raf.length())
-   {
-    fEmployeeId=raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-
-    if(fEmployeeId.equalsIgnoreCase(employeeId))
-    {
-     raf.close();
-     return true;
-    }
-   }
-   return false;
+   ResultSet r= s.executeQuery();
+   exists=r.next();
+   r.close(); s.close();
   }
-  catch(IOException ioe)
+  catch(SQLException se)
   {
-   throw new DAOException(ioe.getMessage());
+   throw new DAOException(se.getMessage());
   }
+  return exists;
  }
  public boolean aadharCardNumberExists(String aadharCardNumber) throws DAOException
  { 
@@ -594,7 +555,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
   try(Connection connection=DAOConnection.getConnection())
   {
    PreparedStatement s;
-   s=connection.prepareStatement("SELECT employee_id FROM employee WHERE aadhar_card_number=?");
+   s=connection.prepareStatement("SELECT gender FROM employee WHERE aadhar_card_number=?");
    s.setString(1,aadharCardNumber);
  
    ResultSet r= s.executeQuery();
@@ -619,7 +580,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
   try(Connection connection=DAOConnection.getConnection())
   {
    PreparedStatement s;
-   s=connection.prepareStatement("SELECT employee_id FROM employee WHERE pan_card_number=?");
+   s=connection.prepareStatement("SELECT gender FROM employee WHERE pan_card_number=?");
    s.setString(1,PANNumber);
  
    ResultSet r= s.executeQuery();
@@ -634,24 +595,24 @@ public class EmployeeDAO implements EmployeeDAOInterface
  }
  public int getCount() throws DAOException
  {   
-  File file= new File(FILE_NAME);
-  if(!(file.exists()))
-  return 0;
-  try(RandomAccessFile raf= new RandomAccessFile(file,"rw");)
-  {
-   if(raf.length()==0)
-   return 0;     
- 
-   raf.readLine();
-   int recordCount=Integer.parseInt(raf.readLine().trim()); 
+  int recordCount;
 
-   raf.close();
-   return recordCount; 
-  }
-  catch(IOException ioe)
+  try(Connection connection=DAOConnection.getConnection())
   {
-   throw new DAOException(ioe.getMessage());
+   Statement s=connection.createStatement();
+   ResultSet r=s.executeQuery("SELECT count(*) FROM employee");
+
+   r.next();
+   recordCount=r.getInt("count");
+   
+   r.close(); s.close();
   }
+  catch(SQLException se)
+  {
+   throw new DAOException(se.getMessage());
+  }
+
+  return recordCount;
  }
  public void update(EmployeeDTOInterface eDTO) throws DAOException 
  {
