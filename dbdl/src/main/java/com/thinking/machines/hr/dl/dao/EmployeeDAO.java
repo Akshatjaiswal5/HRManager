@@ -8,7 +8,7 @@ import java.util.*;
 import java.io.*;
 import java.math.*;
 import java.text.*;
-
+import java.sql.*;
 
 public class EmployeeDAO implements EmployeeDAOInterface 
 {
@@ -27,8 +27,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
   GENDER gender=eDTO.getGender();
   boolean isIndian=eDTO.getIsIndian();
   BigDecimal basicSalary=eDTO.getBasicSalary();
-  Date dateOfBirth=eDTO.getDateOfBirth();
- 
+  java.util.Date dateOfBirth=eDTO.getDateOfBirth();
  
   if(name==null)
   throw new DAOException("Name is null"); 
@@ -41,7 +40,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
   PANNumber=PANNumber.trim();
   if(PANNumber.length()==0)
   throw new DAOException("Length of PANNumber is 0");
- 
+
   if(aadharCardNumber==null)
   throw new DAOException("aadharCardNumber is null"); 
   aadharCardNumber=aadharCardNumber.trim();
@@ -50,9 +49,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
  
   if(designationCode<=0)
   throw new DAOException("Invalid designation code");
-  if(!(new DesignationDAO().codeExists(designationCode)))
-  throw new DAOException("Invalid designation code");
- 
+
   if(dateOfBirth==null)
   throw new DAOException("dateOfBirth is null"); 
   
@@ -61,67 +58,62 @@ public class EmployeeDAO implements EmployeeDAOInterface
   if(basicSalary.signum()==-1)
   throw new DAOException("Basic salary is negative");
  
-  File file= new File(FILE_NAME);
-  try(RandomAccessFile raf= new RandomAccessFile(file,"rw");)
+  try(Connection connection=DAOConnection.getConnection())
   {
-   int lastId=10000000,employeeCount=0;
-   
-   if(raf.length()==0)
-   {
-    raf.writeBytes(String.format("%-10d",lastId)+"\n");
-    raf.writeBytes(String.format("%-10d",employeeCount)+"\n");
-   }
-   else
-   {
-    lastId=Integer.parseInt(raf.readLine().trim());
-    employeeCount=Integer.parseInt(raf.readLine().trim());
-   }
- 
- 
-   String fPANNumber,fAadharCardNumber;
- 
-   while(raf.getFilePointer()<raf.length())
-   {
-    raf.readLine();raf.readLine();
-    fPANNumber=raf.readLine();fAadharCardNumber=raf.readLine();
-    raf.readLine();raf.readLine();raf.readLine();
-    raf.readLine();raf.readLine();  
-   
+   PreparedStatement s;
+   s=connection.prepareStatement("SELECT title FROM designation WHERE code=?");
+   s.setInt(1,designationCode);
 
-    if(fPANNumber.equalsIgnoreCase(PANNumber))
-    {
-     throw new DAOException("fPANNumber: "+PANNumber+" exists.");
-    }
-    if(fAadharCardNumber.equalsIgnoreCase(aadharCardNumber))
-    {
-     throw new DAOException("AadharCardNumber: "+aadharCardNumber+" exists.");
-    }
+   ResultSet r= s.executeQuery();
+   if(!r.next())
+   {
+    r.close();s.close();
+    throw new DAOException("Designation code: "+designationCode+" does not exist.");
    }
-    
-   raf.writeBytes("A"+String.valueOf(lastId+1)+"\n");
-   raf.writeBytes(name+"\n");
-   raf.writeBytes(PANNumber+"\n");
-   raf.writeBytes(aadharCardNumber+"\n");
-   raf.writeBytes(designationCode+"\n");
-   raf.writeBytes(GenderChar.to(gender)+"\n");
-   raf.writeBytes(isIndian+"\n");
-   raf.writeBytes(basicSalary.toPlainString()+"\n");
-   raf.writeBytes(new SimpleDateFormat("dd/MM/yyyy").format(dateOfBirth)+"\n");
-   
-   lastId++;
-   employeeCount++;
-   
-   raf.seek(0); 
+   r.close();s.close();
 
-   raf.writeBytes(String.format("%-10d",lastId)+"\n");
-   raf.writeBytes(String.format("%-10d",employeeCount)+"\n");
- 
-   eDTO.setEmployeeId("A"+lastId);
+   s=connection.prepareStatement("SELECT gender FROM employee WHERE pan_number=?");
+   s.setString(1,PANNumber);
+   r= s.executeQuery();
+   boolean panExists= r.next();
+   r.close();s.close();
+
+   s=connection.prepareStatement("SELECT gender FROM employee WHERE aadhar_card_number=?");
+   s.setString(1,aadharCardNumber);
+   r= s.executeQuery();
+   boolean aadharExists= r.next();
+   r.close();s.close();
+
+   if(panExists&&aadharExists)
+   throw new DAOException("Pan number:"+PANNumber+" and Aadhar card number:"+aadharCardNumber+" exists.");
+   else if(panExists)
+   throw new DAOException("Pan number:"+PANNumber+" exists.");
+   else if(aadharExists)
+   throw new DAOException("Aadhar card number:"+aadharCardNumber+" exists.");
+
+   s=connection.prepareStatement("INSERT INTO employee (name,pan_number,aadhar_card_number,designation_code,gender,is_indian,basic_salary,date_of_birth) VALUES (?,?,?,?,?,?,?,?)",s.RETURN_GENERATED_KEYS);
+   s.setString(1,name);
+   s.setString(2,PANNumber);
+   s.setString(3,aadharCardNumber);
+   s.setInt(4,designationCode);
+   s.setString(5,String.valueOf(GenderChar.to(gender)));
+   s.setBoolean(6,isIndian);
+   s.setBigDecimal(7,basicSalary);
+   java.sql.Date sqlDate= new java.sql.Date(dateOfBirth.getYear(),dateOfBirth.getMonth(),dateOfBirth.getDate());
+   s.setDate(8,sqlDate);
+
+   s.executeUpdate();
+   r=s.getGeneratedKeys();
+   r.next();
+   int generatedEmployeeId=r.getInt(1);
+   r.close();s.close();
+
+   eDTO.setEmployeeId("A"+(10000000+generatedEmployeeId));
   }
-  catch(IOException ioe)
+  catch(SQLException se)
   {
-   throw new DAOException(ioe.getMessage());
-  }
+   throw new DAOException(se.getMessage());
+  }  
  }
  public EmployeeDTOInterface getByEmployeeId(String employeeId) throws DAOException
  { 
@@ -146,7 +138,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
    GENDER fGender;
    boolean fIsIndian;
    BigDecimal fBasicSalary;
-   Date fDateOfBirth;  
+   java.util.Date fDateOfBirth;  
 
 
    while(raf.getFilePointer()<raf.length())
@@ -216,7 +208,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
    GENDER fGender;
    boolean fIsIndian;
    BigDecimal fBasicSalary;
-   Date fDateOfBirth;  
+   java.util.Date fDateOfBirth;  
 
 
    while(raf.getFilePointer()<raf.length())
@@ -286,7 +278,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
    GENDER fGender;
    boolean fIsIndian;
    BigDecimal fBasicSalary;
-   Date fDateOfBirth;  
+   java.util.Date fDateOfBirth;  
 
 
    while(raf.getFilePointer()<raf.length())
@@ -336,67 +328,55 @@ public class EmployeeDAO implements EmployeeDAOInterface
  public Set<EmployeeDTOInterface> getAll() throws DAOException
  { 
   Set<EmployeeDTOInterface> set= new TreeSet<>();
+  
+  String employeeId,name,PANNumber,aadharCardNumber;
+  int designationCode;
+  GENDER gender;
+  boolean isIndian;
+  BigDecimal basicSalary;
+  java.util.Date dateOfBirth;  
+  EmployeeDTOInterface edto;
 
-  File file= new File(FILE_NAME);
-  if(!(file.exists()))
-  return set;
-
-  try(RandomAccessFile raf= new RandomAccessFile(file,"rw");)
+  try(Connection connection=DAOConnection.getConnection())
   {
-   if(raf.length()==0)
-   return set;     
- 
-   raf.readLine();raf.readLine();  
-
-   String fEmployeeId,fName,fPANNumber,fAadharCardNumber;
-   int fDesignationCode;
-   GENDER fGender;
-   boolean fIsIndian;
-   BigDecimal fBasicSalary;
-   Date fDateOfBirth;  
-
-
-   while(raf.getFilePointer()<raf.length())
+   PreparedStatement s=connection.prepareStatement("SELECT * FROM employee");
+   ResultSet r=s.executeQuery();
+   
+   while(r.next())
    {
-    fEmployeeId=raf.readLine();
-    fName=raf.readLine();
-    fPANNumber=raf.readLine(); 
-    fAadharCardNumber=raf.readLine();
-    fDesignationCode=Integer.parseInt(raf.readLine());
-    fGender=GenderChar.from(raf.readLine().charAt(0));
-    fIsIndian=Boolean.parseBoolean(raf.readLine());
-    fBasicSalary= new BigDecimal(raf.readLine());
-    fDateOfBirth=new SimpleDateFormat("dd/MM/yyyy").parse(raf.readLine()); 
+    employeeId="A"+(1000000+r.getInt("employee_id"));
+    name=r.getString("name");
+    PANNumber=r.getString("pan_number");
+    aadharCardNumber=r.getString("aadhar_card_number");
+    designationCode=r.getInt("designation_code");
+    gender=GenderChar.from(r.getString("gender").charAt(0));
+    isIndian=r.getBoolean("is_indian");
+    basicSalary= r.getBigDecimal("basic_salary");
+    dateOfBirth=new java.util.Date(r.getDate("date_of_birth").getTime()); 
 
-    EmployeeDTOInterface edto= new EmployeeDTO();
-    edto.setEmployeeId(fEmployeeId);
-    edto.setName(fName);
-    edto.setPANNumber(fPANNumber);
-    edto.setAadharCardNumber(fAadharCardNumber);
-    edto.setDesignationCode(fDesignationCode);
-    edto.setGender(fGender);
-    edto.setIsIndian(fIsIndian);
-    edto.setBasicSalary(fBasicSalary);
-    edto.setDateOfBirth(fDateOfBirth);
- 
+    edto= new EmployeeDTO();
+    edto.setEmployeeId(employeeId);
+    edto.setName(name);
+    edto.setPANNumber(PANNumber);
+    edto.setAadharCardNumber(aadharCardNumber);
+    edto.setDesignationCode(designationCode);
+    edto.setGender(gender);
+    edto.setIsIndian(isIndian);
+    edto.setBasicSalary(basicSalary);
+    edto.setDateOfBirth(dateOfBirth);
     
     set.add(edto);
    }
-
-   return set; 
   }
-  catch(IOException ioe)
+  catch(SQLException se)
   {
-   throw new DAOException(ioe.getMessage());
-  }
-  catch(ParseException pe)
-  {
-   throw new DAOException(pe.getMessage());
+   throw new DAOException(se.getMessage());
   }
   catch(GenderException ge)
   {
    throw new DAOException(ge.getMessage());
   }
+  return set;
  }
  public Set<EmployeeDTOInterface> getByDesignationCode(int designationCode) throws DAOException
  { 
@@ -421,7 +401,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
    GENDER fGender;
    boolean fIsIndian;
    BigDecimal fBasicSalary;
-   Date fDateOfBirth;  
+   java.util.Date fDateOfBirth;  
 
 
    while(raf.getFilePointer()<raf.length())
@@ -610,42 +590,22 @@ public class EmployeeDAO implements EmployeeDAOInterface
   if(aadharCardNumber.length()==0)
   throw new DAOException("Length of aadharCardNumber is 0");  
 
-  File file= new File(FILE_NAME);
-  if(!(file.exists()))
-  return false;
-  try(RandomAccessFile raf= new RandomAccessFile(file,"rw");)
+  boolean exists;
+  try(Connection connection=DAOConnection.getConnection())
   {
-   if(raf.length()==0)
-   return false;     
+   PreparedStatement s;
+   s=connection.prepareStatement("SELECT employee_id FROM employee WHERE aadhar_card_number=?");
+   s.setString(1,aadharCardNumber);
  
-   raf.readLine();raf.readLine();  
-
-   String fAadharCardNumber;
-
-   while(raf.getFilePointer()<raf.length())
-   {
-    raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-    fAadharCardNumber=raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-
-    if(fAadharCardNumber.equalsIgnoreCase(aadharCardNumber))
-    {
-     raf.close();
-     return true;
-    }
-   }
-   return false; 
+   ResultSet r= s.executeQuery();
+   exists=r.next();
+   r.close(); s.close();
   }
-  catch(IOException ioe)
+  catch(SQLException se)
   {
-   throw new DAOException(ioe.getMessage());
+   throw new DAOException(se.getMessage());
   }
+  return exists;
  }
  public boolean PANNumberExists(String PANNumber) throws DAOException
  { 
@@ -655,43 +615,22 @@ public class EmployeeDAO implements EmployeeDAOInterface
   if(PANNumber.length()==0)
   throw new DAOException("Length of PANNumber is 0");  
 
-  File file= new File(FILE_NAME);
-  if(!(file.exists()))
-  return false;
-  try(RandomAccessFile raf= new RandomAccessFile(file,"rw");)
+  boolean exists;
+  try(Connection connection=DAOConnection.getConnection())
   {
-   if(raf.length()==0)
-   return false;     
+   PreparedStatement s;
+   s=connection.prepareStatement("SELECT employee_id FROM employee WHERE pan_card_number=?");
+   s.setString(1,PANNumber);
  
-   raf.readLine();raf.readLine();  
-
-   String fPANNumber;  
-
-
-   while(raf.getFilePointer()<raf.length())
-   {
-    raf.readLine();
-    raf.readLine();
-    fPANNumber=raf.readLine(); 
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine();
-    raf.readLine(); 
-
-    if(fPANNumber.equalsIgnoreCase(PANNumber))
-    {
-     raf.close();
-     return true;
-    }
-   }
-   return false; 
+   ResultSet r= s.executeQuery();
+   exists=r.next();
+   r.close(); s.close();
   }
-  catch(IOException ioe)
+  catch(SQLException se)
   {
-   throw new DAOException(ioe.getMessage());
+   throw new DAOException(se.getMessage());
   }
+  return exists;
  }
  public int getCount() throws DAOException
  {   
@@ -727,7 +666,7 @@ public class EmployeeDAO implements EmployeeDAOInterface
   GENDER gender=eDTO.getGender();
   boolean isIndian=eDTO.getIsIndian();
   BigDecimal basicSalary=eDTO.getBasicSalary();
-  Date dateOfBirth=eDTO.getDateOfBirth();
+  java.util.Date dateOfBirth=eDTO.getDateOfBirth();
  
  
   if(employeeId==null)

@@ -1,4 +1,4 @@
-cd D:\java\hr\bl\testcases
+cd ..\bl\testcases\employee
 del *.class
-javac -classpath D:\java\javatools\common\classes;..\build\libs\bl.jar;..\..\dl\dist\hr-dl-1.0.jar;..\..\common\classes;. *.java
+javac -classpath ..\..\build\libs\bl.jar;..\..\..\dl\dist\hr-dl-1.0.jar;..\..\..\common\dist\common.jar;. *.java
 pause
