@@ -11,14 +11,14 @@ int main()
   getchar();
   system("cls");
   cout<<"Select an option:"<<endl;
-  cout<<"1.add"<<endl;
-  cout<<"2.update"<<endl;
-  cout<<"3.get by id"<<endl;
-  cout<<"4.get by aadhar"<<endl;
-  cout<<"5.get by pan"<<endl;  
-  cout<<"6.remove"<<endl;
-  cout<<"7.get all"<<endl;
-  cout<<"8.get all by designation"<<endl;
+  cout<<"1.add employee"<<endl;
+  cout<<"2.update employee"<<endl;
+  cout<<"3.get employee by id"<<endl;
+  cout<<"4.get employee by aadhar"<<endl;
+  cout<<"5.get employee by pan"<<endl;  
+  cout<<"6.remove employee"<<endl;
+  cout<<"7.get all employees"<<endl;
+  cout<<"8.get all employee by designations"<<endl;
   cout<<"9.exit"<<endl;
 
   cin>>x;
