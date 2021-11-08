@@ -2,7 +2,3 @@ com/thinking/machines/network/common/Request.java
  com.thinking.machines.network.common.Request
 com/thinking/machines/network/common/Response.java
  com.thinking.machines.network.common.Response
-com/thinking/machines/network/client/NetworkClient.java
- com.thinking.machines.network.client.NetworkClient
-com/thinking/machines/network/server/NetworkServer.java
- com.thinking.machines.network.server.NetworkServer
