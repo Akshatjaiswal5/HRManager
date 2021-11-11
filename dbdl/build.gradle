@@ -10,5 +10,5 @@ repositories {
 }
 
 dependencies {
-    implementation files('../common/dist/common.jar')
+    implementation files('jars/mysql/mysql.jar','../common/build/libs/common.jar')
 }

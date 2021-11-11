@@ -1,0 +1,3 @@
+
+rootProject.name = 'hr'
+include('bl', 'pl', 'dbdl', 'common', 'network')

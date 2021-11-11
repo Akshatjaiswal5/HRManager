@@ -1,6 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="netcommon">
-    <output-path>$PROJECT_DIR$/out/artifacts/netcommon</output-path>
-    <root id="archive" name="netcommon.jar" />
-  </artifact>
-</component>
