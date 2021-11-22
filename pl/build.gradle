@@ -1,17 +1,12 @@
 plugins {
     id 'java'
 }
-project.configurations.implementation.setCanBeResolved(true)
+
 dependencies {
     implementation files('build/libs/pl.jar','../common/build/libs/common.jar','../bl/build/libs/bl.jar','jars/flatlaf/flatlaf-1.6.jar')
     implementation fileTree(include: ['*.jar'], dir: 'jars/itext/')
 }
-jar {
 
-manifest {
-        attributes 'Main-Class': 'com.thinking.machines.hr.pl.Main                
-    }
-}
 
 
 
