@@ -1,4 +1,4 @@
 apply plugin: 'java'
 dependencies{
-implementation files('../netclient/build/libs/netclient-1.0.jar','../netcommon/build/libs/netcommon-1.0.jar','../dbdl/build/libs/dbdl-1.0.jar','../common/classes/')
+implementation files('../network/netclient/build/libs/netclient.jar','../network/netcommon/build/libs/netcommon.jar','../common/build/libs/common.jar')
 }

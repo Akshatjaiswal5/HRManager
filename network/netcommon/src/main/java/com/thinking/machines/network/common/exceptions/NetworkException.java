@@ -1,6 +1,6 @@
 package com.thinking.machines.network.common.exceptions;
 public class NetworkException extends Exception {
- NetworkException(String message){
+ public NetworkException(String message){
   super(message);
  }
 }

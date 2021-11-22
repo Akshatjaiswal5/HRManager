@@ -1,4 +1,4 @@
-package com.thinking.machines.hr.bl.interfaces.managers;
+/*package com.thinking.machines.hr.bl.interfaces.managers;
 import com.thinking.machines.hr.bl.exceptions.*;
 import com.thinking.machines.hr.bl.interfaces.pojo.*;
 import java.util.*;
@@ -19,4 +19,4 @@ public interface EmployeeManagerInterface
  public int getEmployeeCountByDesignation(int designationCode) throws BLException; 
  public void updateEmployee(EmployeeInterface employee) throws BLException;
  public void deleteEmployee(String employeeId) throws BLException;
-}
+}*/

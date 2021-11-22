@@ -1,4 +1,4 @@
-package com.thinking.machines.hr.bl.interfaces.pojo;
+/*package com.thinking.machines.hr.bl.interfaces.pojo;
 import java.math.*;
 import java.util.*;
 import java.io.*;
@@ -25,3 +25,4 @@ public interface EmployeeInterface extends Comparable<EmployeeInterface>,Seriali
  public void setAadharCardNumber(String aadharCardNumber);
  public String getAadharCardNumber();
 }
+*/

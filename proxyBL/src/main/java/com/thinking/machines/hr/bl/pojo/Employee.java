@@ -1,4 +1,4 @@
-package com.thinking.machines.hr.bl.pojo;
+/*package com.thinking.machines.hr.bl.pojo;
 import com.thinking.machines.hr.bl.interfaces.pojo.*;
 import com.thinking.machines.enums.*;
 import java.util.*;
@@ -115,4 +115,4 @@ public class Employee implements EmployeeInterface
  {
   return this.employeeId.toUpperCase().hashCode();
  }
-}
+}*/
