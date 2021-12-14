@@ -1,4 +1,0 @@
-apply plugin: 'java'
-dependencies{
-implementation files('../network/netclient/build/libs/netclient.jar','../network/netcommon/build/libs/netcommon.jar','../common/build/libs/common.jar')
-}

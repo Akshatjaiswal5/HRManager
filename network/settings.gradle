@@ -1,3 +1,0 @@
-
-rootProject.name = 'network'
-include('netcommon', 'netclient', 'netserver')
