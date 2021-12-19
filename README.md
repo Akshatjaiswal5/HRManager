@@ -23,10 +23,4 @@ I made this layer again in two ways, First in the testing phase using CLI, and f
 paradigm where I have separated the model from the actual UI. I have also implemented a "Print to PDF" button using itextpdf library. which can generate a 
 report in pdf form.
 ![screenshot 2](https://github.com/Akshatjaiswal5/HRManager/blob/main/Screenshot%202.png)
-## Things I learnt
 
-1. **Readable code** is foremost important. I have used lengthy variable names and proper readable code structures with comments.
-1. **Object oriented code** I have first created Interfaces for all the classes I've created and wrote data transfer objects that are used for interaction between layers.
-1. **Exception handling** the data layer throws DAOException and the business layer throws BLException which are handled well for a bug free program.
-1. **Swing Library** I have spent much time on making presentation layer look pretty and I have a gist for good looking GUI.
-1. **Gradle** I have used only plain text editors, command line interface, and gradle to build this application.
