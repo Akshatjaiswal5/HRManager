@@ -19,7 +19,7 @@ read speeds (when the app scales) as well as proper code management. All the dat
 to optimize read speeds.
 
 1. **Presentation layer**
-I made this layer again in two ways, First in the testing phase using CLI, and finally using a GUI using Java Swing. It is based on Model-View-Controller
+I made this layer again in two ways, First in the tesing phase using CLI, and finally using a GUI using Java Swing. It is based on Model-View-Controller
 paradigm where I have separated the model from the actual UI. I have also implemented a "Print to PDF" button using itextpdf library. which can generate a 
 report in pdf form.
 ![screenshot 2](https://github.com/Akshatjaiswal5/HRManager/blob/main/Screenshot%202.png)
