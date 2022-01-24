@@ -11,7 +11,7 @@ One layer can be changed without affecting other ones and thus multiple teams ca
 1. **Data layer**
 I made this layer two times, first version "dl" was made using Java File handling. I read and write all the information to a simple ASCII file.
 this way I could customize how my data was stored in n number of ways. Second time I made datalayer "dbdl" using MySql a SQL database and by using
-Java database connectivity (JDBC).
+Java database connectivity (JDBC)..
 
 1. **Business layer**
 I made this layer by utilizing Java Collection Classes. The benefit of having a business layer instead of our Gui directly accessing database is to provide faster
