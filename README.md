@@ -23,4 +23,3 @@ I made this layer again in two ways, First in the testing phase using CLI, and f
 paradigm where I have separated the model from the actual UI. I have also implemented a "Print to PDF" button using itextpdf library. which can generate a 
 report in pdf form.
 ![screenshot 2](https://github.com/Akshatjaiswal5/HRManager/blob/main/Screenshot%202.png)
-

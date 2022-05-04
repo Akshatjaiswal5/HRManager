@@ -1,0 +1,5 @@
+apply plugin: 'java'
+
+dependencies {
+ implementation files('dependencies/mysql.jar','dependencies/common.jar')
+}

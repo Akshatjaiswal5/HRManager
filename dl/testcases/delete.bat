@@ -1,1 +1,0 @@
-java -classpath ..\classes;C:\hr\common\classes;C:\javatools\common\classes;. delete
