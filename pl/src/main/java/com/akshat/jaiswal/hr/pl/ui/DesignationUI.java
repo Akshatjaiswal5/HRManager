@@ -136,7 +136,7 @@ public class DesignationUI extends JFrame
     if(selected!=JFileChooser.APPROVE_OPTION)
     return;
   
-    File file=jfc.getSelectedFile();
+    File file=new File(jfc.getSelectedFile().getName()+".pdf");
 
     try
     {
