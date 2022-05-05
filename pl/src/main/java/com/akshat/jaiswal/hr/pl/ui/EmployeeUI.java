@@ -231,8 +231,12 @@ public class EmployeeUI extends JFrame
      if(!designationManager.designationTitleExists(designationTextField.getText().trim()))
       ble.addException("designation","Invalid Designation");
 
+     if(ble.hasExceptions())
+      throw ble;
      DesignationInterface designation=designationManager.getDesignationByTitle(designationTextField.getText().trim());
      
+     System.out.println(designation.getCode());
+
      if(genderSelector.getSelectedIndex()==0)
       ble.addException("gender","select a gender");
      

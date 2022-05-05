@@ -295,7 +295,7 @@ public class DesignationManager implements DesignationManagerInterface
   {
    title=title.trim();
 
-   if(title.length()==0||!(this.titleWiseDesignationsMap.containsKey(title.toUpperCase())))
+   if(title.length()==0||!(this.titleWiseDesignationsMap.containsKey(title)))
    {
     ble.addException("title","Designation Title is invalid");
     throw ble;
@@ -303,7 +303,7 @@ public class DesignationManager implements DesignationManagerInterface
   }
     
   DesignationInterface designation;
-  designation=this.titleWiseDesignationsMap.get(title.toUpperCase());
+  designation=this.titleWiseDesignationsMap.get(title);
 
   DesignationInterface designationClone= new Designation();
 
