@@ -3,7 +3,7 @@ A hr management app, I built using layered programming approach. It can be used 
 a GUI made by Java Swing Library. This project took a long time because I experimented and learnt many effective coding practices using Java.
 
 
-![screenshot 1](https://github.com/Akshatjaiswal5/HRManager/blob/main/Screenshot%201.png)
+![screenshot 1](https://raw.githubusercontent.com/Akshatjaiswal5/resources/main/hr1.png)
 ## Layered programming
 This application is made in three layers. I built all the layers but in practice these layers can be made by different teams and each layer is independent of each other.
 One layer can be changed without affecting other ones and thus multiple teams can coordinate on a single big project.
@@ -22,4 +22,5 @@ to optimize read speeds.
 I made this layer again in two ways, First in the testing phase using CLI, and finally using a GUI using Java Swing. It is based on Model-View-Controller
 paradigm where I have separated the model from the actual UI. I have also implemented a "Print to PDF" button using itextpdf library. which can generate a 
 report in pdf form.
-![screenshot 2](https://github.com/Akshatjaiswal5/HRManager/blob/main/Screenshot%202.png)
+![screenshot 2](https://raw.githubusercontent.com/Akshatjaiswal5/resources/main/hr2.png)
+![screenshot 3](https://raw.githubusercontent.com/Akshatjaiswal5/resources/main/hr3.png)
